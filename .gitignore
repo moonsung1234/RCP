@@ -1,0 +1,6 @@
+__pycache__
+build
+dist
+release
+background.png
+client.exe.spec
