@@ -45,7 +45,7 @@ class Screen :
         self.picture_label = Label(self.window, font=_font, text="Background")
         self.picture_label.place(x=250, y=250)
 
-        self.image = PhotoImage(file="./background.png")
+        self.image = PhotoImage(file="./default.png")
         self.picture = Label(self.window, image=self.image)
         self.picture.place(x=10, y=300)
 

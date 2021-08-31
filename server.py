@@ -1,19 +1,18 @@
 
 from threading import Thread
+from tkinter import Pack
 from display import Screen
 from sk import Server
 from PIL import Image
+from packet import Packet
 import numpy as np
 import json
 import time
 
-client_list = {}
 threads = []
-is_upload = False
-upload_delay = 2
-
-packet = ""
-data = ""
+client_list = {}
+recv_len = 1024 # default
+si = input("학급을 입력해주세요 : ")
 
 # set server
 server = Server("192.168.219.110", 8080)
@@ -23,91 +22,50 @@ server.listen()
 screen = Screen(1000, 700)
 
 def clickCallback(e) :
-    if not is_upload :
-        target = screen.combobox.get()
+    target = screen.combobox.get()
 
-        # thread = Thread(target=loadCallback, target=(list[target],))
-        # thread.daemon = True
-        # thread.start()
+    program_packet = Packet(None, "program")
+    background_packet = Packet(None, "background")
 
-        server.send(b"program", client_socket=client_list[target])
+    server.send(program_packet.encode(), client_socket=client_list[target])    
+    time.sleep(0.5)
+    server.send(background_packet.encode(), client_socket=client_list[target])
 
-        time.sleep(1)
-
-        server.send(b"background", client_socket=client_list[target])
-
-    else :
-        print("Another work is doing...")
-
-screen.setTitle("<2학년 7반>")
+screen.setTitle(si)
 screen.setCombobox(clickCallback)
 screen.setPicture()
 screen.setProgramBar()
 
 def clientCallback(_client_socket, _addr) :
-    global packet
-    global data
-
-    image = ""
-    program = ""
+    global recv_len
 
     while True :
-        data = server.receive(1024, client_socket=_client_socket).decode().strip()
+        data = server.receive(recv_len, client_socket=_client_socket)
+        p = Packet.decode(data)
 
-        if data == "sips" :
-            packet = "sip"
+        if p.packet == "ip_len" or p.packet == "pp_len" :
+            recv_len = p.data
 
-        elif data == "ips" :
-            packet = "ip"
+        elif p.packet == "sip" :
+            client_list[p.data] = _client_socket
 
-        elif data == "pps" :
-            packet = "pp"
+            screen.addElement(p.data)
 
-        if packet == "sip" :
-            if data == "sipe" :
-                packet = ""
+        elif p.packet == "ip" :
+            img = Image.fromarray(np.array(json.loads(p.data)).astype(np.uint8))
+            img.save("./background.png")
 
-            else :
-                if not data == "sips" :
-                    client_list[data] = _client_socket
+            screen.updatePicture()
 
-                    screen.addElement(data)
+        elif p.packet == "pp" :
+            p_list = json.loads(p.data)
 
-        elif packet == "ip" :
-            if data == "ipe" :
-                img = Image.fromarray(np.array(json.loads(image)).astype(np.uint8))
-                img.save("./background.png")
+            screen.program_bar.delete(1.0, screen.tk.END)
 
-                screen.updatePicture()
+            for program in list(reversed(p_list)) :
+                screen.program_bar.insert(1.0, "-   " + program + "\n\n")
 
-                packet = ""
-                image = ""
-
-                print("upload success!")
-
-            else :
-                if not data == "ips" :
-                    image += data
-
-        elif packet == "pp" :
-            if data == "ppe" :
-                p_list = json.loads(program)
-
-                screen.program_bar.delete(1.0, screen.tk.END)
-
-                for p in list(reversed(p_list)) :
-                    screen.program_bar.insert(1.0, "-   " + p + "\n\n")
-
-                screen.program_bar.insert(1.0, "\n\n")
-                
-                packet = ""
-                program = ""
-
-                print("getting program success!")
-            
-            else :
-                if not data == "pps" :
-                    program += data
+            screen.program_bar.insert(1.0, "\n\n")
 
 def start() :
     while True :

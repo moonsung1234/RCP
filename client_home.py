@@ -1,7 +1,9 @@
 
 from threading import Thread
+from tkinter import Pack
 from PIL import ImageGrab
 from sk import Client
+from packet import Packet
 import numpy as np
 import program
 import json
@@ -9,6 +11,7 @@ import time
 
 # packet = ""
 data = ""
+delay = 0.1
 
 # set client
 # client = Client("125.182.224.34", 8080)
@@ -18,43 +21,50 @@ def getBackgroundImage() :
     img = ImageGrab.grab().resize((650, 350))
     img_list = np.array(img).tolist()
 
-    return json.dumps(img_list).encode()
+    return img_list
 
 client.connect()
 
 school_info = input("학번을 입력해주세요 : ")
 
-client.send(b"sips") # school information packet start
-client.send(school_info.encode())
-client.send(b"sipe") # school information packet end
+sip_packet = Packet("sip", school_info)
+client.send(sip_packet.encode())
 
 def handleBackground() :
     global data
 
     while True :
         if data == "background" :
-            client.send(b"ips") # image packet start
-            client.send(getBackgroundImage())
-            client.send(b" " * 1000) # flush
-            client.send(b"ipe") # image packet end
+            background = json.dumps(getBackgroundImage())
+
+            # send packet length
+            ip_packet = Packet("ip", background)
+            ip_len_packet = Packet("ip_len", len(ip_packet.encode()))
+
+            client.send(ip_len_packet.encode())
+            client.send(ip_packet.encode())
 
             data = ""
 
-        time.sleep(1)
+        time.sleep(delay)
 
 def handleProgram() :
     global data
 
     while True :
         if data == "program" :
-            client.send(b"pps") # program packet start
-            client.send(json.dumps(program.getVisiableProgram()).encode())
-            client.send(b" " * 1000) # flush
-            client.send(b"ppe") # program packet end
+            p = json.dumps(program.getVisiableProgram()).encode()
+
+            # send packet length
+            pp_packet = Packet("pp", p)
+            pp_len_packet = Packet("pp_len", len(pp_packet.encode()))
+            
+            client.send(pp_len_packet.encode())
+            client.send(pp_packet.encode())
 
             data = ""
 
-        time.sleep(1)
+        time.sleep(delay)
 
 def start() :
     thread1 = Thread(target=handleBackground)
@@ -68,6 +78,8 @@ def start() :
     global data
 
     while True :
-        data = client.receive(1024).decode().strip()
+        data = client.receive(1024)
+        data = Packet.decode(data)
+        data = data.data
 
 start()
