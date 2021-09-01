@@ -9,10 +9,6 @@ import program
 import json
 import time
 
-# packet = ""
-packet = None
-delay = 0.1
-
 # set client
 # client = Client("125.182.224.34", 8080)
 client = Client("192.168.219.110", 8080)
@@ -30,28 +26,11 @@ school_info = input("학번을 입력해주세요 : ")
 sip_packet = Packet("sip", school_info)
 client.send(sip_packet.encode())
 
-def handleBackground() :
-    global packet
-
+def start() :
     while True :
-        if packet != None and packet.packet == "background" :
-            background = json.dumps(getBackgroundImage())
+        data = client.receive(1024)
+        packet = Packet.decode(data)
 
-            # send packet length
-            ip_packet = Packet("ip", background)
-            ip_len_packet = Packet("ip_len", len(ip_packet.encode()))
-
-            client.send(ip_len_packet.encode())
-            client.send(ip_packet.encode())
-
-            packet = None
-
-        time.sleep(delay)
-
-def handleProgram() :
-    global packet
-
-    while True :
         if packet != None and packet.packet == "program" :
             p = json.dumps(program.getVisiableProgram()).encode()
 
@@ -64,21 +43,16 @@ def handleProgram() :
 
             packet = None
 
-        time.sleep(delay)
+        elif packet != None and packet.packet == "background" :
+            background = json.dumps(getBackgroundImage())
 
-def start() :
-    thread1 = Thread(target=handleBackground)
-    thread1.daemon = True
-    thread1.start()
+            # send packet length
+            ip_packet = Packet("ip", background)
+            ip_len_packet = Packet("ip_len", len(ip_packet.encode()))
 
-    thread2 = Thread(target=handleProgram)
-    thread2.daemon = True
-    thread2.start()
+            client.send(ip_len_packet.encode())
+            client.send(ip_packet.encode())
 
-    global packet
-
-    while True :
-        data = client.receive(1024)
-        packet = Packet.decode(data)
+            packet = None
 
 start()

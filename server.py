@@ -28,7 +28,7 @@ def clickCallback(e) :
     background_packet = Packet("background", None)
 
     server.send(program_packet.encode(), client_socket=client_list[target])    
-    time.sleep(0.1)
+    # time.sleep(0.1)
     server.send(background_packet.encode(), client_socket=client_list[target])
 
 screen.setTitle(si)
