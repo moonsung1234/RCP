@@ -1,10 +1,14 @@
 
-from threading import Thread
-from tkinter import Pack
+import load
+
+load.init("./module")
+
 from display import Screen
-from sk import Server
-from PIL import Image
 from packet import Packet
+from sk import Server
+
+from threading import Thread
+from PIL import Image
 import numpy as np
 import json
 import time

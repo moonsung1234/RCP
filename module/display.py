@@ -1,5 +1,4 @@
 
-from PIL import ImageGrab
 from tkinter import *
 from tkinter.font import Font
 from tkinter.ttk import Combobox

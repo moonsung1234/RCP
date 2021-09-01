@@ -1,11 +1,15 @@
 
-from threading import Thread
-from tkinter import Pack
-from PIL import ImageGrab
-from sk import Client
+import load
+
+load.init("./module")
+
 from packet import Packet
-import numpy as np
+from sk import Client
 import program
+
+from threading import Thread
+from PIL import ImageGrab
+import numpy as np
 import json
 import time
 
