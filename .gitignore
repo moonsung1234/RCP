@@ -3,5 +3,6 @@ build
 dist
 release
 background.png
+default.png
 client.exe.spec
 work.py
