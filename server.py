@@ -24,11 +24,11 @@ screen = Screen(1000, 700)
 def clickCallback(e) :
     target = screen.combobox.get()
 
-    program_packet = Packet(None, "program")
-    background_packet = Packet(None, "background")
+    program_packet = Packet("program", None)
+    background_packet = Packet("background", None)
 
     server.send(program_packet.encode(), client_socket=client_list[target])    
-    time.sleep(0.5)
+    time.sleep(0.1)
     server.send(background_packet.encode(), client_socket=client_list[target])
 
 screen.setTitle(si)

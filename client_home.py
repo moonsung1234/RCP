@@ -10,7 +10,7 @@ import json
 import time
 
 # packet = ""
-data = ""
+packet = None
 delay = 0.1
 
 # set client
@@ -31,10 +31,10 @@ sip_packet = Packet("sip", school_info)
 client.send(sip_packet.encode())
 
 def handleBackground() :
-    global data
+    global packet
 
     while True :
-        if data == "background" :
+        if packet != None and packet.packet == "background" :
             background = json.dumps(getBackgroundImage())
 
             # send packet length
@@ -44,15 +44,15 @@ def handleBackground() :
             client.send(ip_len_packet.encode())
             client.send(ip_packet.encode())
 
-            data = ""
+            packet = None
 
         time.sleep(delay)
 
 def handleProgram() :
-    global data
+    global packet
 
     while True :
-        if data == "program" :
+        if packet != None and packet.packet == "program" :
             p = json.dumps(program.getVisiableProgram()).encode()
 
             # send packet length
@@ -62,7 +62,7 @@ def handleProgram() :
             client.send(pp_len_packet.encode())
             client.send(pp_packet.encode())
 
-            data = ""
+            packet = None
 
         time.sleep(delay)
 
@@ -75,11 +75,10 @@ def start() :
     thread2.daemon = True
     thread2.start()
 
-    global data
+    global packet
 
     while True :
         data = client.receive(1024)
-        data = Packet.decode(data)
-        data = data.data
+        packet = Packet.decode(data)
 
 start()
