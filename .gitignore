@@ -6,3 +6,5 @@ background.png
 default.png
 client.exe.spec
 work.py
+server.py
+load.py
