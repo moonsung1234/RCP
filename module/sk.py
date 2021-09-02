@@ -36,6 +36,19 @@ class Server :
     def closeClient(self) :
         self.client_socket.close()
 
+    def check(self, client_socket=None) :
+        try :
+            if client_socket != None :
+                client_socket.sendall(b"")
+
+            else :
+                self.client_socket.sendall(b"")
+        
+            return True
+
+        except :
+            return False
+
 class Client(Server) :
     def __init__(self, host, port):
         super().__init__(host, port)
@@ -49,3 +62,16 @@ class Client(Server) :
 
     def send(self, data) :
         return super().send(data)
+
+    def check(self, client_socket=None) :
+        try :
+            if client_socket != None :
+                client_socket.sendall(b"")
+
+            else :
+                self.client_socket.sendall(b"")
+        
+            return True
+
+        except :
+            return False

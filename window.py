@@ -36,7 +36,7 @@ def clickCallback(e) :
     client.send(target_packet.encode())
     client.send(program_packet.encode())
 
-    time.sleep(1)
+    time.sleep(0.5) # send delay
 
     client.send(background_packet.encode())
 
@@ -73,6 +73,11 @@ def start() :
                 screen.program_bar.insert(1.0, "-   " + program + "\n\n")
 
             screen.program_bar.insert(1.0, "\n\n")
+
+        elif p.packet == "exit" :
+            screen.removeElement(p.data)
+
+            print("해당 클라이언트는 연결이 종료되었습니다.")
 
 thread = Thread(target=start)
 thread.daemon = True

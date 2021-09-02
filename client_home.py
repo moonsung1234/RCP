@@ -37,21 +37,21 @@ client.send(sip_packet.encode())
 def start() :
     while True :
         data = client.receive(1024)
-        packet = Packet.decode(data)
+        p = Packet.decode(data)
 
-        if packet.packet == "program" :
-            p = json.dumps(program.getVisiableProgram()).encode()
+        if p.packet == "program" :
+            pro = json.dumps(program.getVisiableProgram()).encode()
 
             # send packet length
-            pp_packet = Packet("pp", p)
+            pp_packet = Packet("pp", pro)
             pp_len_packet = Packet("pp_len", len(pp_packet.encode()))
             
             client.send(pp_len_packet.encode())
             client.send(pp_packet.encode())
 
-            print(packet.packet)
+            print(p.packet)
 
-        elif packet.packet == "background" :
+        elif p.packet == "background" :
             background = json.dumps(getBackgroundImage())
 
             # send packet length
@@ -61,6 +61,16 @@ def start() :
             client.send(ip_len_packet.encode())
             client.send(ip_packet.encode())
 
-            print(packet.packet)
+            print(p.packet)
+
+        elif p.packet == "error" :
+            print(p.data)
+
+            break
+
+        elif p.packet == "exit" :
+            print("client exit.")
+
+            break
 
 start()

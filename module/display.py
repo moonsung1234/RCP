@@ -26,6 +26,9 @@ class Screen :
     def addElement(self, e) :    
         self.combobox_list.append(e)
 
+    def removeElement(self, e) :
+        self.combobox_list.remove(e)
+
     def _postCallback(self) :
         self.combobox["value"] = self.combobox_list
 

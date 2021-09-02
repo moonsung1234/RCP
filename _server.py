@@ -26,14 +26,35 @@ import json
 import time
 
 window_list = {}
-recv_len = 1024 # default
 
 # set server
 server = Server("192.168.219.110", 8080)
 server.listen()
 
+def checkClients() :
+    while True :
+        for i in range(len(window_list)) :
+            keys = list(window_list.keys())
+            window =  window_list[keys[i]]
+
+            if not server.check(client_socket=window["socket"]) :
+                for client in window["clients"] :
+                    if not server.check(client_socket=client["socket"]) :
+                        exit_packet = Packet("exit", None)
+                        server.send(exit_packet.encode(), client_socket=client["socket"])
+
+                del window_list[keys[i]]
+
+            else :
+                for client in window["clients"] :
+                    if not server.check(client_socket=client["socket"]) :
+                        exit_packet = Packet("exit", client["data"])
+                        server.send(exit_packet.encode(), client_socket=window["socket"])
+
+        time.sleep(1)
+
 def clientCallback(data) :
-    global recv_len
+    recv_len = 1024 # defalut
 
     window = window_list[data]
 
@@ -47,19 +68,28 @@ def clientCallback(data) :
         else :
             # program packet & background packet
             for _ in range(2) :
-                to_client_packet = Packet(p.packet, p.data)
-                server.send(to_client_packet.encode(), client_socket=client["socket"])
+                if server.check(client_socket=client["socket"]) :
+                    to_client_packet = Packet(p.packet, p.data)
+                    server.send(to_client_packet.encode(), client_socket=client["socket"])
 
-                d = server.receive(recv_len, client_socket=client["socket"])
-                p = Packet.decode(d)
+                    d = server.receive(recv_len, client_socket=client["socket"])
+                    p = Packet.decode(d)
 
-                if p.packet == "ip_len" or p.packet == "pp_len" :
-                    recv_len = p.data
+                    if p.packet == "ip_len" or p.packet == "pp_len" :
+                        recv_len = p.data
 
-                to_window_packet = Packet(p.packet, p.data)
-                server.send(to_window_packet.encode(), client_socket=window["socket"])
+                    to_window_packet = Packet(p.packet, p.data)
+                    server.send(to_window_packet.encode(), client_socket=window["socket"])
+
+                else :
+                    to_window_packet = Packet("exit", client["data"])
+                    server.send(to_window_packet.encode(), client_socket=window["socket"])
 
 def start() :
+    check_thread = Thread(target=checkClients)
+    check_thread.daemon = True
+    check_thread.start()
+
     while True :
         server.connect()
 
@@ -79,15 +109,22 @@ def start() :
             thread.start()
 
         elif p.packet == "client_handshake" :
-            data2 = server.receive(1024)
-            p2 = Packet.decode(data2)
+            try :
+                window_list[p.data]
+            
+                data2 = server.receive(1024)
+                p2 = Packet.decode(data2)
 
-            sip_packet = Packet(p2.packet, p2.data)
-            server.send(sip_packet.encode(), client_socket=window_list[p.data]["socket"])
+                sip_packet = Packet(p2.packet, p2.data)
+                server.send(sip_packet.encode(), client_socket=window_list[p.data]["socket"])
 
-            window_list[p.data]["clients"].append({
-                "socket" : server.client_socket,
-                "data" : p2.data
-            })
+                window_list[p.data]["clients"].append({
+                    "socket" : server.client_socket,
+                    "data" : p2.data
+                })
+
+            except :
+                error_packet = Packet("error", p.data + " room is not exist")
+                server.send(error_packet.encode())
 
 start()
