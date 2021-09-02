@@ -62,16 +62,3 @@ class Client(Server) :
 
     def send(self, data) :
         return super().send(data)
-
-    def check(self, client_socket=None) :
-        try :
-            if client_socket != None :
-                client_socket.sendall(b"")
-
-            else :
-                self.client_socket.sendall(b"")
-        
-            return True
-
-        except :
-            return False
