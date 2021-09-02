@@ -50,15 +50,6 @@ class Server :
             return False
 
 class Client(Server) :
-    def __init__(self, host, port):
-        super().__init__(host, port)
-
     def connect(self):
         self.client_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         self.client_socket.connect((self.host, self.port)) 
-
-    def receive(self, buffer_size):
-        return super().receive(buffer_size)
-
-    def send(self, data) :
-        return super().send(data)
