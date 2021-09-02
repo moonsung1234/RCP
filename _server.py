@@ -82,6 +82,9 @@ def start() :
             data2 = server.receive(1024)
             p2 = Packet.decode(data2)
 
+            sip_packet = Packet(p2.packet, p2.data)
+            server.send(sip_packet.encode(), client_socket=window_list[p.data]["socket"])
+
             window_list[p.data]["clients"].append({
                 "socket" : server.client_socket,
                 "data" : p2.data

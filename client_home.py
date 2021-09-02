@@ -25,12 +25,13 @@ def getBackgroundImage() :
 
 client.connect()
 
-school_info = input("학번을 입력해주세요 : ")
+school_info1 = input("학급을 입력해주세요 : ")
+school_info2 = input("학번을 입력해주세요 : ")
 
-handshake_packet = Packet("client_handshake", "27")
+handshake_packet = Packet("client_handshake", school_info1)
 client.send(handshake_packet.encode())
 
-sip_packet = Packet("sip", school_info)
+sip_packet = Packet("sip", school_info2)
 client.send(sip_packet.encode())
 
 def start() :

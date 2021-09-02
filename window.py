@@ -74,8 +74,6 @@ def start() :
 
             screen.program_bar.insert(1.0, "\n\n")
 
-screen.addElement("20707")
-
 thread = Thread(target=start)
 thread.daemon = True
 thread.start()
