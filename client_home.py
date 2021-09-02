@@ -27,6 +27,9 @@ client.connect()
 
 school_info = input("학번을 입력해주세요 : ")
 
+handshake_packet = Packet("client_handshake", "27")
+client.send(handshake_packet.encode())
+
 sip_packet = Packet("sip", school_info)
 client.send(sip_packet.encode())
 
@@ -35,7 +38,7 @@ def start() :
         data = client.receive(1024)
         packet = Packet.decode(data)
 
-        if packet != None and packet.packet == "program" :
+        if packet.packet == "program" :
             p = json.dumps(program.getVisiableProgram()).encode()
 
             # send packet length
@@ -45,9 +48,9 @@ def start() :
             client.send(pp_len_packet.encode())
             client.send(pp_packet.encode())
 
-            packet = None
+            print(packet.packet)
 
-        elif packet != None and packet.packet == "background" :
+        elif packet.packet == "background" :
             background = json.dumps(getBackgroundImage())
 
             # send packet length
@@ -57,6 +60,6 @@ def start() :
             client.send(ip_len_packet.encode())
             client.send(ip_packet.encode())
 
-            packet = None
+            print(packet.packet)
 
 start()
