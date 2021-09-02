@@ -68,22 +68,17 @@ def clientCallback(data) :
         else :
             # program packet & background packet
             for _ in range(2) :
-                if server.check(client_socket=client["socket"]) :
-                    to_client_packet = Packet(p.packet, p.data)
-                    server.send(to_client_packet.encode(), client_socket=client["socket"])
+                to_client_packet = Packet(p.packet, p.data)
+                server.send(to_client_packet.encode(), client_socket=client["socket"])
 
-                    d = server.receive(recv_len, client_socket=client["socket"])
-                    p = Packet.decode(d)
+                d = server.receive(recv_len, client_socket=client["socket"])
+                p = Packet.decode(d)
 
-                    if p.packet == "ip_len" or p.packet == "pp_len" :
-                        recv_len = p.data
+                if p.packet == "ip_len" or p.packet == "pp_len" :
+                    recv_len = p.data
 
-                    to_window_packet = Packet(p.packet, p.data)
-                    server.send(to_window_packet.encode(), client_socket=window["socket"])
-
-                else :
-                    to_window_packet = Packet("exit", client["data"])
-                    server.send(to_window_packet.encode(), client_socket=window["socket"])
+                to_window_packet = Packet(p.packet, p.data)
+                server.send(to_window_packet.encode(), client_socket=window["socket"])
 
 def start() :
     check_thread = Thread(target=checkClients)
